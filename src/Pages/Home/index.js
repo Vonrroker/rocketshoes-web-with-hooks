@@ -1,101 +1,66 @@
-import React from 'react';
+import React, { Component } from 'react';
+import { connect } from 'react-redux';
 import { MdAddShoppingCart } from 'react-icons/md';
 
 import { ProductList } from './styles';
+import api from '../../services/api';
+import { formatPrice } from '../../util/format';
 
-export default function Home() {
-  return (
-    <ProductList>
-      <li>
-        <img
-          src="https://static.netshoes.com.br/produtos/28/COL-3586-128/COL-3586-128_detalhe1.jpg?ims=280x280"
-          alt="Tênis"
-        />
-        <strong>Tenis lecal</strong>
-        <span>R$103,44</span>
+class Home extends Component {
+  state = {
+    products: [],
+  };
 
-        <button type="button">
-          <div>
-            <MdAddShoppingCart size={16} color="#fff" />3
-          </div>
-          <span>ADICIONAR AO CARRINHO</span>
-        </button>
-      </li>
-      <li>
-        <img
-          src="https://static.netshoes.com.br/produtos/28/COL-3586-128/COL-3586-128_detalhe1.jpg?ims=280x280"
-          alt="Tênis"
-        />
-        <strong>Tenis lecal</strong>
-        <span>R$103,44</span>
+  async componentDidMount() {
+    const response = await api.get('/products');
 
-        <button type="button">
-          <div>
-            <MdAddShoppingCart size={16} color="#fff" />3
-          </div>
-          <span>ADICIONAR AO CARRINHO</span>
-        </button>
-      </li>
-      <li>
-        <img
-          src="https://static.netshoes.com.br/produtos/28/COL-3586-128/COL-3586-128_detalhe1.jpg?ims=280x280"
-          alt="Tênis"
-        />
-        <strong>Tenis lecal</strong>
-        <span>R$103,44</span>
+    const data = response.data.map(product => ({
+      ...product,
+      priceFormated: formatPrice(product.price),
+    }));
 
-        <button type="button">
-          <div>
-            <MdAddShoppingCart size={16} color="#fff" />3
-          </div>
-          <span>ADICIONAR AO CARRINHO</span>
-        </button>
-      </li>
-      <li>
-        <img
-          src="https://static.netshoes.com.br/produtos/28/COL-3586-128/COL-3586-128_detalhe1.jpg?ims=280x280"
-          alt="Tênis"
-        />
-        <strong>Tenis lecal</strong>
-        <span>R$103,44</span>
+    this.setState({ products: data });
+  }
 
-        <button type="button">
-          <div>
-            <MdAddShoppingCart size={16} color="#fff" />3
-          </div>
-          <span>ADICIONAR AO CARRINHO</span>
-        </button>
-      </li>
-      <li>
-        <img
-          src="https://static.netshoes.com.br/produtos/28/COL-3586-128/COL-3586-128_detalhe1.jpg?ims=280x280"
-          alt="Tênis"
-        />
-        <strong>Tenis lecal</strong>
-        <span>R$103,44</span>
+  handleAddProduct = product => {
+    const { dispatch } = this.props;
 
-        <button type="button">
-          <div>
-            <MdAddShoppingCart size={16} color="#fff" />3
-          </div>
-          <span>ADICIONAR AO CARRINHO</span>
-        </button>
-      </li>
-      <li>
-        <img
-          src="https://static.netshoes.com.br/produtos/28/COL-3586-128/COL-3586-128_detalhe1.jpg?ims=280x280"
-          alt="Tênis"
-        />
-        <strong>Tenis lecal</strong>
-        <span>R$103,44</span>
+    dispatch({
+      type: 'ADD_TO_CART',
+      ...product,
+    });
+  };
 
-        <button type="button">
-          <div>
-            <MdAddShoppingCart size={16} color="#fff" />3
-          </div>
-          <span>ADICIONAR AO CARRINHO</span>
-        </button>
-      </li>
-    </ProductList>
-  );
+  render() {
+    const { products } = this.state;
+    const { cart } = this.props;
+
+    return (
+      <ProductList>
+        {products.map(product => (
+          <li key={product.id}>
+            <img src={product.image} alt={product.title} />
+            <strong>{product.title}</strong>
+            <span>{product.priceFormated}</span>
+
+            <button
+              type="button"
+              onClick={() => this.handleAddProduct({ product })}
+            >
+              <div>
+                <MdAddShoppingCart size={16} color="#fff" />3
+              </div>
+              <span>ADICIONAR AO CARRINHO</span>
+            </button>
+          </li>
+        ))}
+      </ProductList>
+    );
+  }
 }
+
+const mapStateToProps = state => ({
+  cart: state.cart,
+});
+
+export default connect(mapStateToProps)(Home);
